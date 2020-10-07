@@ -14,7 +14,7 @@ Allows for multiple processors configured in different ways.
 Add the following to your `project.clj` file:
 
 ```clj
-[b-social/event-processor "0.1.4"]
+[b-social/event-processor "0.1.0"]
 ```
 
 ## Documentation
