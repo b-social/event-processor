@@ -4,7 +4,8 @@
             [clojure.java.jdbc :as jdbc]
             [event-processor.processor.protocols
              :refer [on-processing-complete
-                     get-unprocessed-events group-unprocessed-events-by handle-event]]))
+                     get-unprocessed-events group-unprocessed-events-by handle-event]]
+            [event-processor.processor.locking.locks :refer [with-lock]]))
 
 (defn- milliseconds [millis] millis)
 
@@ -16,26 +17,27 @@
 (defn- process-events-once
   [{:keys [database event-processor event-handler]
     :as   processor}]
-  (log/log-debug
-    {:event-processor event-processor}
-    "Checking for un-processed event batch.")
-  (let [all-events  (get-unprocessed-events event-handler processor)
-        events-per (group-by #(group-unprocessed-events-by event-handler processor %) all-events)]
-    (doseq [events (vals events-per)]
-      (try
-        (doseq [event events
-                :let [event-context
-                      {:event-processor event-processor}]]
-          (jdbc/with-db-transaction [transaction (:handle database)]
-            (let [database (assoc database :handle transaction)
-                  processor (assoc processor :database database)]
-              (handle-event event-handler processor event event-context)
-              (on-processing-complete event-handler processor event event-context))))
-        (catch Throwable exception
-          (log/log-error
-            {:event-processor event-processor}
-            "Something went wrong in event processor."
-            exception))))))
+  (with-lock database
+    (log/log-debug
+      {:event-processor event-processor}
+      "Checking for un-processed event batch.")
+    (let [all-events (get-unprocessed-events event-handler processor)
+          events-per (group-by #(group-unprocessed-events-by event-handler processor %) all-events)]
+      (doseq [events (vals events-per)]
+        (try
+          (doseq [event events
+                  :let [event-context
+                        {:event-processor event-processor}]]
+            (jdbc/with-db-transaction [transaction (:handle database)]
+              (let [database (assoc database :handle transaction)
+                    processor (assoc processor :database database)]
+                (handle-event event-handler processor event event-context)
+                (on-processing-complete event-handler processor event event-context))))
+          (catch Throwable exception
+            (log/log-error
+              {:event-processor event-processor}
+              "Something went wrong in event processor."
+              exception)))))))
 
 (defn- process-events-forever
   [{:keys [configuration event-processor]
