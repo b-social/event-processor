@@ -7,8 +7,16 @@
 (defmacro with-lock
   "Acquire an advisory lock on the database, and run function, then release the lock.
    Block if lock is taken."
-  [database & body]
+  [database lock-id & body]
   `(try
-        (get-lock (:handle ~database))
+        (println "lock-id" ~lock-id)
+        (try
+          (get-lock (:handle ~database) {:lock_id ~lock-id})
+          (catch Exception exception#
+            (throw (ex-info "Error getting locks" {:lock_id ~lock-id :lock-error true} exception#))))
         ~@body
-        (finally (release-lock (:handle ~database)))))
+        (finally
+          (do
+            (println "release lock" ~lock-id)
+            (release-lock (:handle ~database) {:lock_id ~lock-id}))
+          )))

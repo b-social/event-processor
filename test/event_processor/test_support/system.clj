@@ -59,7 +59,9 @@
        :event-handler
        (AtomEventHandler. (atom []))
        :atom
-       (atom []))
+       (atom [])
+
+       :name (or (:name configuration-overrides) "test-system"))
 
      (processors/new-system
        configuration-overrides

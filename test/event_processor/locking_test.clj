@@ -1,6 +1,7 @@
 (ns event-processor.locking-test
   (:require
     [clojure.test :refer [use-fixtures deftest testing is]]
+    [com.stuartsierra.component :as component]
     [event-processor.test-support.system :refer
      [new-test-system with-system-lifecycle stub-get-unprocessed-events
       stub-group-unprocessed-events-by stub-handle-event
@@ -48,8 +49,6 @@
           {:matcher true?
            :timeout 10000})
 
-        (doall (map println (spy/calls stub-get-unprocessed-events)))
-
         (testing "event processing only called from one event handler"
           (is (= 1 (count (unique-entries
                             (map get-event-handler
@@ -61,7 +60,7 @@
                             (map get-event-handler
                               (spy/calls mock-on-processing-complete))))))))))
 
-  (deftest multiple-systems-should-not-process-concurrently
+  (deftest second-system-should-run-processor-if-first-errors
     (let [event {:message   "event"
                  :group-key "group-key"}
           unprocessed-events (atom [event])
@@ -105,4 +104,79 @@
                             (map get-event-handler
                               (spy/calls mock-handle-event))
                             (map get-event-handler
-                              (spy/calls mock-on-processing-complete)))))))))))
+                              (spy/calls mock-on-processing-complete))))))))))
+
+
+  (deftest systems-with-different-lock-ids-run-independently
+    (let [test-system-3 (atom (new-test-system (assoc database
+                                                 :db-lock-id 987654
+                                                 :name "test-system-3")))
+
+          ;_ (reset! test-system-3 (component/start-system @test-system-3))
+
+          event {:message   "event"
+                 :group-key "group-key"}
+          unprocessed-events (atom [event])
+
+          remove-unprocessed-event (fn [completed] (reset! unprocessed-events
+                                                     (remove #(= % completed) @unprocessed-events)))
+
+          mock-get-unprocessed-events (spy/mock (fn [_ _] @unprocessed-events))
+          mock-group-unprocessed-events-by (spy/mock (fn [_ _ event] (:group-key event)))
+          mock-handle-event (spy/mock (fn [_ _ _ _] (Thread/sleep 11000)))
+          mock-on-processing-complete
+          (spy/mock (fn [_ _ event _] (remove-unprocessed-event event)))]
+
+      (try
+        (do
+          (reset! test-system-3 (component/start-system @test-system-3))
+
+          (with-redefs [stub-get-unprocessed-events mock-get-unprocessed-events
+                        stub-group-unprocessed-events-by mock-group-unprocessed-events-by
+                        stub-handle-event mock-handle-event
+                        stub-on-processing-complete mock-on-processing-complete]
+
+            (let [unique-event-handlers (unique-entries
+                                          (map get-event-handler
+                                            (spy/calls stub-get-unprocessed-events))
+                                          (map get-event-handler
+                                            (spy/calls mock-group-unprocessed-events-by))
+                                          (map get-event-handler
+                                            (spy/calls mock-handle-event))
+                                          (map get-event-handler
+                                            (spy/calls mock-on-processing-complete)))]
+
+              (do-until
+                #(count (unique-entries
+                          (map get-event-handler
+                            (spy/calls stub-get-unprocessed-events))
+                          (map get-event-handler
+                            (spy/calls mock-group-unprocessed-events-by))
+                          (map get-event-handler
+                            (spy/calls mock-handle-event))
+                          (map get-event-handler
+                            (spy/calls mock-on-processing-complete))))
+                {:matcher #(= 2 %)
+                 :timeout 10000})
+
+              (testing "event processor from test-system 3 tries to process events"
+                (is (some (= (:event-processor test-system-3)) unique-event-handlers)))
+              )
+
+            ;(testing "event processing only called from two event handlers"
+            ;  (is (= 2 (count (unique-entries
+            ;                    (map get-event-handler
+            ;                      (spy/calls stub-get-unprocessed-events))
+            ;                    (map get-event-handler
+            ;                      (spy/calls mock-group-unprocessed-events-by))
+            ;                    (map get-event-handler
+            ;                      (spy/calls mock-handle-event))
+            ;                    (map get-event-handler
+            ;                      (spy/calls mock-on-processing-complete))))))))))
+            ))
+        (finally
+          (reset! test-system-3 (component/stop-system @test-system-3))))
+      ))
+
+  )
+

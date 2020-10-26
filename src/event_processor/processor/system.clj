@@ -85,7 +85,8 @@
           (processor configuration-overrides
             (processor-configuration/processor-configuration
               configuration-prefix
-              processor-identifier)))
+              processor-identifier
+              configuration-overrides)))
 
         processor
         (component/using

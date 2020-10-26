@@ -7,7 +7,9 @@
             with-source
             with-specification
             with-key-fn
-            env-source]]
+            multi-source
+            env-source
+            map-source]]
    [configurati.key-fns :refer [remove-prefix]]))
 
 (defn processor-configuration-specification [processor-type]
@@ -21,10 +23,15 @@
         (with-parameter (prefixed-parameter :interval)
           :type :integer :default 1000)
         (with-parameter (prefixed-parameter :schema-version)
+          :type :integer :default 1)
+        (with-parameter :db-lock-id
           :type :integer :default 1)))))
 
-(defn processor-configuration [configuration-prefix processor-type]
+(defn processor-configuration [configuration-prefix processor-type overrides]
   (define-configuration
-    (with-source (env-source :prefix configuration-prefix))
+    (with-source
+      (multi-source
+        (map-source overrides)
+        (env-source :prefix configuration-prefix)))
     (with-specification
       (processor-configuration-specification processor-type))))
