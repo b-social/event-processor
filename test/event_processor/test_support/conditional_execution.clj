@@ -12,7 +12,6 @@
 
   ([func matcher stop-time]
    (let [result (func)]
-     (println "result" result)
      (cond
        (passed-stop-time? stop-time)
        (throw
