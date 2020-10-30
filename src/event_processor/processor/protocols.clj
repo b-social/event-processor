@@ -1,7 +1,7 @@
 (ns event-processor.processor.protocols)
 
 (defprotocol EventProcessor
-  "A handler that is called when at certain points in an events lifecycle.
+  "A handler that is called at certain points in an events lifecycle.
   The passed processor contains all the configured dependencies."
   :extend-via-metadata true
   (get-unprocessed-events [this processor]
