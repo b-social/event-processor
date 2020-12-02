@@ -10,7 +10,7 @@
    Block if lock is taken."
   [database lock-id & body]
   `(try
-     (log/log-info
+     (log/log-debug
        {:lock-id ~lock-id}
        "Acquiring lock")
      (try
@@ -22,7 +22,7 @@
      ~@body
      (finally
        (do
-         (log/log-info
+         (log/log-debug
            {:lock-id ~lock-id}
            "Releasing lock")
          (release-lock (:handle ~database) {:lock_id ~lock-id})))))
