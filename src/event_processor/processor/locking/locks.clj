@@ -16,16 +16,18 @@
              (.prepareStatement
                connection#
                "SELECT pg_try_advisory_lock(?)")
-             result-set# (doto
-                          get-lock-statement#
-                          (.setInt 1 ~lock-id)
-                          .executeQuery)
-             acquired# (doto
-                         result-set#
-                         .first
-                         (.getBoolean 1))]
+
+             _# (.setInt get-lock-statement# 1 ~lock-id)
+             result-set# (.executeQuery get-lock-statement#)
+
+             _# (.first result-set#)
+             acquired# (.getBoolean result-set# 1)
+
+             _# (.close result-set#)]
+
          (when acquired#
            ~@body))
+
        (finally
          (do
            (log/log-debug
