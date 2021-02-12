@@ -2,8 +2,8 @@
   (:require [event-processor.utils.logging :as log]))
 
 (defmacro with-lock
-  "Acquire an advisory lock on the database, and run function, then release the lock.
-   Block if lock is taken."
+  "Try to acquire a Postgres advisory lock on the database.
+  If successful, run `body`, otherwise skip."
   [database lock-id & body]
   `(let [db# (:handle ~database)
          datasource# (:datasource db#)
