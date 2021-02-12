@@ -5,7 +5,7 @@
             [event-processor.processor.protocols
              :refer [on-processing-complete
                      get-unprocessed-events group-unprocessed-events-by handle-event]]
-            [event-processor.processor.locking.locks :refer [with-lock get-lock release-lock]]))
+            [event-processor.processor.locking.locks :refer [with-lock]]))
 
 (defn- milliseconds [millis] millis)
 
