@@ -14,6 +14,7 @@
                                  "SELECT pg_advisory_unlock(?)")]
                            (.setInt release-lock-statement# 1 ~lock-id)
                            (.execute release-lock-statement#)
+                           (.close connection#)
                            nil))]
      (when-let [connection# (try
                               (.getConnection datasource#)
