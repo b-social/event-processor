@@ -59,6 +59,46 @@
                             (map get-event-handler
                               (spy/calls mock-on-processing-complete))))))))))
 
+  (deftest second-system-should-run-processor-if-first-errors
+    (let [event {:message   "event"
+                 :group-key "group-key"}
+          unprocessed-events (atom [event])
+
+          remove-unprocessed-event (fn [completed] (reset! unprocessed-events
+                                                     (remove #(= % completed) @unprocessed-events)))
+
+          captured-handler (atom nil)
+
+          mock-get-unprocessed-events (spy/mock (fn [actual-event-handler _]
+                                                  (if @captured-handler
+                                                    @unprocessed-events
+                                                    (do
+                                                      (reset! captured-handler actual-event-handler)
+                                                      (throw Exception)))))
+          mock-group-unprocessed-events-by (spy/mock (fn [_ _ event] (:group-key event)))
+          mock-handle-event (spy/spy)
+          mock-on-processing-complete
+          (spy/mock (fn [_ _ event _] (remove-unprocessed-event event)))]
+
+      (with-redefs [stub-get-unprocessed-events mock-get-unprocessed-events
+                    stub-group-unprocessed-events-by mock-group-unprocessed-events-by
+                    stub-handle-event mock-handle-event
+                    stub-on-processing-complete mock-on-processing-complete]
+
+        (do-until
+          #(spy/called-n-times? stub-get-unprocessed-events 2)
+          {:matcher true?
+           :timeout 10000})
+
+        (testing "other processing only called from one event handler"
+          (is (= 1 (count (unique-entries
+                            (map get-event-handler
+                              (spy/calls mock-group-unprocessed-events-by))
+                            (map get-event-handler
+                              (spy/calls mock-handle-event))
+                            (map get-event-handler
+                              (spy/calls mock-on-processing-complete))))))))))
+
   (deftest systems-with-different-lock-ids-run-independently
     (let [test-system-3 (atom (new-test-system (assoc database
                                                  :db-lock-id 987654)))
