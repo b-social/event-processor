@@ -86,14 +86,9 @@
                     stub-on-processing-complete mock-on-processing-complete]
 
         (do-until
-          #(spy/called-once? mock-on-processing-complete)
+          #(spy/called-n-times? stub-get-unprocessed-events 2)
           {:matcher true?
            :timeout 10000})
-
-        (testing "get-unprocessed-events called from both handlers"
-          (is (= 2 (count (unique-entries
-                            (map get-event-handler
-                              (spy/calls stub-get-unprocessed-events)))))))
 
         (testing "other processing only called from one event handler"
           (is (= 1 (count (unique-entries

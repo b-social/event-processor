@@ -1,4 +1,4 @@
-(defproject b-social/event-processor "0.1.0-SNAPSHOT"
+(defproject b-social/event-processor "0.1.1-SNAPSHOT"
 
   :description "A library for processing events as a stuartsierra component and configured with configurati. Opinionated that the event processing will be wrapped in a jdbc transaction."
 
@@ -12,8 +12,7 @@
                  [io.logicblocks/configurati "0.5.2"]
                  [cambium/cambium.core "0.9.3"]
                  [cambium/cambium.codec-cheshire "0.9.3"]
-                 [org.clojure/java.jdbc "0.7.11"]
-                 [com.layerware/hugsql "0.4.9"]]
+                 [org.clojure/java.jdbc "0.7.11"]]
 
   :plugins [[lein-cloverage "1.1.2"]
             [lein-shell "0.5.0"]
