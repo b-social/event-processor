@@ -41,15 +41,18 @@
 
                _# (.close result-set#)]
 
-           (when acquired#
-             (log/log-debug
-               {:lock-id ~lock-id}
-               "Lock acquired")
-             ~@body
-             (log/log-debug
-               {:lock-id ~lock-id}
-               "Releasing lock")
-             (release-lock# connection#)))
+           (if acquired#
+             (do
+
+               (log/log-debug
+                 {:lock-id ~lock-id}
+                 "Lock acquired")
+               ~@body
+               (log/log-debug
+                 {:lock-id ~lock-id}
+                 "Releasing lock")
+               (release-lock# connection#))
+             (.close connection#)))
 
          (catch Exception e#
            (log/log-warn
