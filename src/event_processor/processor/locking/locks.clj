@@ -53,17 +53,19 @@
          (log/log-debug
            {:lock-id ~lock-id}
            "Acquiring lock")
-         (when-let [acquired# (acquire-lock connection# ~lock-id)]
-           (log/log-debug
-             {:lock-id ~lock-id}
-             "Lock acquired")
-           ~@body
-           (log/log-debug
-             {:lock-id ~lock-id}
-             "Releasing lock")
-           (release-lock connection# ~lock-id))
+         (if-let [acquired# (acquire-lock connection# ~lock-id)]
+           (do (log/log-debug
+                 {:lock-id ~lock-id}
+                 "Lock acquired")
+               ~@body
+               (log/log-debug
+                 {:lock-id ~lock-id}
+                 "Releasing lock")
+               (release-lock connection# ~lock-id))
+           (.close connection#))
          (catch Exception e#
            (log/log-warn
              {:lock-id   ~lock-id
               :exception e#}
-             "Failed run the acquire lock method"))))))
+             "Failed run the acquire lock method")
+           (.close connection#))))))
