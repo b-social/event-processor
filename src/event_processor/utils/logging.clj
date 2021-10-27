@@ -1,6 +1,7 @@
 (ns event-processor.utils.logging
   (:require
-   [cambium.core :as log]))
+    [cambium.core :as log])
+  (:import (java.time Instant)))
 
 (defn ^:no-doc get-error-context [context ^Throwable exception]
   (let [exception-class-name (.getCanonicalName (class exception))
@@ -31,3 +32,16 @@
    `(log-error
       (get-error-context ~context ~exception)
       ~formatted-string)))
+
+(defmacro with-timings
+  [block-name ctx & body]
+  `(let [start-time# (.getEpochSecond (Instant/now))
+         ret# ~@body
+         end-time# (.getEpochSecond (Instant/now))]
+     (log-info
+       {:ctx        ~ctx
+        :start-time start-time#
+        :end-time   end-time#
+        :elapsed    (- end-time# start-time#)}
+       (format "Ran %s" ~block-name))
+     ret#))

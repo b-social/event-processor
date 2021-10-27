@@ -24,7 +24,7 @@
             [lein-kibit "0.1.8"]
             [lein-bikeshed "0.5.2"]]
 
-  :profiles {:test {:dependencies
+  :profiles {:dev {:dependencies
                       [[eftest "0.5.9"]
                        [freeport "1.0.0"]
                        [com.opentable.components/otj-pg-embedded "0.13.3"]
