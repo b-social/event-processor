@@ -36,8 +36,9 @@
                       (.getConnection datasource)
                       (catch Exception e
                         (log/log-warn
-                          {:lock-id   lock-id
-                           :exception e}
+                          {:lock-id     lock-id
+                           :exception   e
+                           :stack-trace (.getStackTrace e)}
                           "Failed to secure the connection object")
                         nil))))
 
@@ -67,4 +68,6 @@
            (log/log-warn
              {:lock-id   ~lock-id
               :exception e#}
-             "Failed run the acquire lock method"))))))
+             "Failed run the acquire lock method"))
+         (finally
+           (.close connection#))))))

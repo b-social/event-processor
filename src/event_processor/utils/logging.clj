@@ -35,9 +35,9 @@
 
 (defmacro with-timings
   [block-name ctx & body]
-  `(let [start-time# (.getEpochSecond (Instant/now))
+  `(let [start-time# (.toEpochMilli (Instant/now))
          ret# ~@body
-         end-time# (.getEpochSecond (Instant/now))]
+         end-time# (.toEpochMilli (Instant/now))]
      (log-info
        {:ctx        ~ctx
         :start-time start-time#
