@@ -38,7 +38,7 @@
   `(let [start-time# (.toEpochMilli (Instant/now))
          ret# ~@body
          end-time# (.toEpochMilli (Instant/now))]
-     (log-info
+     (log-debug
        {:ctx        ~ctx
         :start-time start-time#
         :end-time   end-time#

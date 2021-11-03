@@ -53,7 +53,7 @@
          (log/log-debug
            {:lock-id ~lock-id}
            "Acquiring lock")
-         (when-let [acquired# (acquire-lock connection# ~lock-id)]
+         (when (true? (acquire-lock connection# ~lock-id))
            (log/log-debug
              {:lock-id ~lock-id}
              "Lock acquired")
