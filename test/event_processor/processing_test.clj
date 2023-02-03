@@ -2,7 +2,7 @@
   (:require
    [clojure.test :refer :all]
    [event-processor.test-support.system :refer
-    [new-test-system with-system-lifecycle stub-get-unprocessed-events
+    [with-system-lifecycle stub-get-unprocessed-events
      stub-group-unprocessed-events-by stub-handle-event
      stub-on-processing-complete]]
    [event-processor.test-support.postgres.database :as database]
@@ -10,11 +10,11 @@
    [spy.core :as spy]
    [event-processor.processor.protocols :refer [EventProcessor]]))
 
-(let [database (database/new-database)
-      test-system (atom (new-test-system database))]
+(let [database (atom nil)
+      test-system (atom nil)]
   (use-fixtures :each
     (database/with-database database)
-    (with-system-lifecycle test-system))
+    (with-system-lifecycle test-system database))
 
   (deftest processes-single-event
     (let [^EventProcessor event-handler (:event-handler @test-system)

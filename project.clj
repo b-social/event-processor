@@ -27,7 +27,7 @@
   :profiles {:dev {:dependencies
                       [[eftest "0.5.9"]
                        [freeport "1.0.0"]
-                       [com.opentable.components/otj-pg-embedded "0.13.3"]
+                       [com.opentable.components/otj-pg-embedded "1.0.1"]
                        [org.apache.curator/curator-test "5.0.0"]
                        [com.impossibl.pgjdbc-ng/pgjdbc-ng "0.8.4"]
                        [hikari-cp "2.12.0"]
