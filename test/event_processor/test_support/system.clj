@@ -1,25 +1,18 @@
 (ns event-processor.test-support.system
   (:require
-   [com.stuartsierra.component :as component]
+    [com.stuartsierra.component :as component]
 
-   [event-processor.test-support.database :as db]
-   [configurati.core :as conf]
-   [event-processor.processor.system :as processors]
+    [event-processor.test-support.database :as db]
+    [configurati.core :as conf]
+    [event-processor.processor.system :as processors]
 
-   [event-processor.processor.protocols :refer [EventProcessor
-                                                get-unprocessed-events
-                                                group-unprocessed-events-by
-                                                handle-event
-                                                on-processing-complete]]))
+    [event-processor.processor.protocols :refer [EventProcessor
+                                                 get-unprocessed-events
+                                                 group-unprocessed-events-by
+                                                 handle-event
+                                                 on-processing-complete]])
+  (:import (com.opentable.db.postgres.embedded EmbeddedPostgres)))
 
-(defn with-system-lifecycle [system-atom]
-  (fn [f]
-    (try
-      (do
-        (reset! system-atom (component/start-system @system-atom))
-        (f))
-      (finally
-        (reset! system-atom (component/stop-system @system-atom))))))
 
 (defn stub-get-unprocessed-events [_ _] [])
 (defn stub-group-unprocessed-events-by [_ _ _])
@@ -73,3 +66,15 @@
     (merge
       {:main-processing-enabled? true}
       configuration)))
+
+(defn with-system-lifecycle
+  [system-atom database-atom]
+  (fn [f]
+    (try
+      (reset! system-atom
+              (component/start-system
+                (new-test-system {:database-port (.getPort ^EmbeddedPostgres @database-atom)})))
+      (f)
+      (finally
+        (reset! system-atom
+                (component/stop-system @system-atom))))))
