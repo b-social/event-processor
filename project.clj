@@ -32,7 +32,8 @@
                        [com.impossibl.pgjdbc-ng/pgjdbc-ng "0.8.4"]
                        [hikari-cp "2.12.0"]
                        [tortue/spy "2.0.0"]]
-                    :eftest {:multithread? false}}}
+                    :eftest {:multithread? false}}
+             :clj-kondo   {:plugins [[com.github.clj-kondo/lein-clj-kondo "0.2.1"]]}}
 
   :cloverage
   {:ns-exclude-regex [#"^user"]}
@@ -55,7 +56,7 @@
   :cljfmt {:indents ^:replace {#".*" [[:inner 1]]}}
 
   :aliases {"clj-kondo" ["with-profile" "+clj-kondo" "clj-kondo" "--lint" "src" "--lint" "test"]
-            "pre-release" ["do" "cljfmt" "check," "clj-kondo," "check," "test"]}
+            "pre-release" ["do" "cljfmt" "check," "clj-kondo," "check," "eftest"]}
 
   :release-tasks  [["pre-release"]
                    ["vcs" "assert-committed"]
