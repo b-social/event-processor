@@ -1,16 +1,16 @@
 (ns ^:no-doc event-processor.processor.configuration
   (:require
-   [configurati.core
-    :refer [define-configuration
-            define-configuration-specification
-            with-parameter
-            with-source
-            with-specification
-            with-key-fn
-            multi-source
-            env-source
-            map-source]]
-   [configurati.key-fns :refer [remove-prefix]]))
+    [configurati.core
+     :refer [define-configuration
+             define-configuration-specification
+             with-parameter
+             with-source
+             with-specification
+             with-key-fn
+             multi-source
+             env-source
+             map-source]]
+    [configurati.key-fns :refer [remove-prefix]]))
 
 (defn processor-configuration-specification [processor-type]
   (let [prefix (str (name processor-type) "-processor")]

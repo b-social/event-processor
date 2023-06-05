@@ -1,11 +1,11 @@
 (ns event-processor.processor.system
   (:require
     [clojure.string :as str]
-    [configurati.core :as conf]
     [com.stuartsierra.component :as component]
-    [event-processor.utils.logging :as log]
+    [configurati.core :as conf]
+    [event-processor.processor.component :as two-stage]
     [event-processor.processor.configuration :as processor-configuration]
-    [event-processor.processor.component :as two-stage]))
+    [event-processor.utils.logging :as log]))
 
 (defn- ->keyword
   [parts]
@@ -60,10 +60,10 @@
    {:keys [database processor-identifier configuration-prefix additional-dependencies
            processing-enabled
            processor-configuration processor event-handler]
-    :or   {database                :database
-           processor-identifier    :event-processor
-           configuration-prefix    :service
-           additional-dependencies {}}}]
+    :or {database :database
+         processor-identifier :event-processor
+         configuration-prefix :service
+         additional-dependencies {}}}]
   (let [processor-name
         (name processor-identifier)
         event-handler
@@ -93,7 +93,7 @@
         (component/using
           (two-stage/new-processor processor-identifier)
           (merge
-            {:configuration        processor-configuration
-             :database             database
-             :event-handler        event-handler}
+            {:configuration processor-configuration
+             :database database
+             :event-handler event-handler}
             additional-dependencies))))))

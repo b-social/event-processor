@@ -1,13 +1,13 @@
 (ns event-processor.processor.component
   (:require
-   [com.climate.claypoole :as cp]
-   [com.stuartsierra.component :as component]
-   [event-processor.utils.logging :as log]
-   [clojure.java.jdbc :as jdbc]
-   [event-processor.processor.protocols
-    :refer [on-processing-complete
-            get-unprocessed-events group-unprocessed-events-by handle-event]]
-   [event-processor.processor.locking.locks :refer [with-lock]]))
+    [clojure.java.jdbc :as jdbc]
+    [com.climate.claypoole :as cp]
+    [com.stuartsierra.component :as component]
+    [event-processor.processor.locking.locks :refer [with-lock]]
+    [event-processor.processor.protocols
+     :refer [on-processing-complete
+             get-unprocessed-events group-unprocessed-events-by handle-event]]
+    [event-processor.utils.logging :as log]))
 
 (defn- milliseconds [millis] millis)
 
@@ -18,7 +18,7 @@
 
 (defn- handle-events-group
   [{:keys [database event-processor event-handler]
-    :as   processor}
+    :as processor}
    events]
   (try
     (doseq [event events
@@ -72,12 +72,12 @@
 
 (defn- process-events-forever
   [{:keys [configuration event-processor]
-    :as   processor}]
+    :as processor}]
   (let [{:keys [interval]} configuration
         processor-as-map (into {} [processor])]
     (log/log-info
       {:event-processor event-processor
-       :configuration   configuration}
+       :configuration configuration}
       "Initialising event processor.")
     (every
       (milliseconds interval)
@@ -102,7 +102,7 @@
     (let [{:keys [threads]} configuration
           thread-pool (when (> threads 1)
                         (log/log-info {:threads threads}
-                                      "Starting thread-pool")
+                          "Starting thread-pool")
                         (cp/threadpool threads))
           component (assoc component :thread-pool thread-pool)
           processor (future (process-events-forever component))]
