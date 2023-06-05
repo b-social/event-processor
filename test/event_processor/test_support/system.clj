@@ -6,11 +6,7 @@
     [configurati.core :as conf]
     [event-processor.processor.system :as processors]
 
-    [event-processor.processor.protocols :refer [EventProcessor
-                                                 get-unprocessed-events
-                                                 group-unprocessed-events-by
-                                                 handle-event
-                                                 on-processing-complete]])
+    [event-processor.processor.protocols :refer [EventProcessor]])
   (:import (com.opentable.db.postgres.embedded EmbeddedPostgres)))
 
 

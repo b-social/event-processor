@@ -1,14 +1,15 @@
 (ns event-processor.processor.system
   (:require
-   [configurati.core :as conf]
-   [com.stuartsierra.component :as component]
-   [event-processor.utils.logging :as log]
-   [event-processor.processor.configuration :as processor-configuration]
-   [event-processor.processor.component :as two-stage]))
+    [clojure.string :as str]
+    [configurati.core :as conf]
+    [com.stuartsierra.component :as component]
+    [event-processor.utils.logging :as log]
+    [event-processor.processor.configuration :as processor-configuration]
+    [event-processor.processor.component :as two-stage]))
 
 (defn- ->keyword
   [parts]
-  (keyword (clojure.string/join parts)))
+  (keyword (str/join parts)))
 
 (defn new-system
   "Creates a new event processor.
