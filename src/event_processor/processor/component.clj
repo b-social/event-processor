@@ -1,11 +1,13 @@
 (ns event-processor.processor.component
-  (:require [com.stuartsierra.component :as component]
-            [event-processor.utils.logging :as log]
-            [clojure.java.jdbc :as jdbc]
-            [event-processor.processor.protocols
-             :refer [on-processing-complete
-                     get-unprocessed-events group-unprocessed-events-by handle-event]]
-            [event-processor.processor.locking.locks :refer [with-lock]]))
+  (:require
+   [com.climate.claypoole :as cp]
+   [com.stuartsierra.component :as component]
+   [event-processor.utils.logging :as log]
+   [clojure.java.jdbc :as jdbc]
+   [event-processor.processor.protocols
+    :refer [on-processing-complete
+            get-unprocessed-events group-unprocessed-events-by handle-event]]
+   [event-processor.processor.locking.locks :refer [with-lock]]))
 
 (defn- milliseconds [millis] millis)
 
@@ -14,43 +16,59 @@
      ~@body
      (Thread/sleep ~millis)))
 
+(defn- handle-events-group
+  [{:keys [database event-processor event-handler]
+    :as   processor}
+   events]
+  (try
+    (doseq [event events
+            :let [event-context
+                  {:event-processor event-processor}]]
+      (jdbc/with-db-transaction
+        [transaction (:handle database)]
+        (let [database (assoc database
+                         :handle
+                         transaction)
+              processor (assoc processor
+                          :database
+                          database)]
+          (handle-event event-handler
+            processor
+            event
+            event-context)
+          (on-processing-complete event-handler
+            processor
+            event
+            event-context))))
+    (catch Throwable exception
+      (log/log-error
+        {:event-processor event-processor}
+        "Something went wrong in event processor."
+        exception))))
+
 (defn- process-events-once
-  [{:keys [database event-processor event-handler configuration]
-    :as   processor}]
-  (with-lock database
+  [{:keys [database
+           event-processor
+           event-handler
+           configuration
+           thread-pool]
+    :as processor}]
+  (with-lock
+    database
     (:db-lock-id configuration)
     (log/log-debug
       {:event-processor event-processor}
       "Checking for un-processed event batch.")
-    (let [all-events (get-unprocessed-events event-handler processor)
-          events-per (group-by
-                       #(group-unprocessed-events-by event-handler processor %)
-                       all-events)]
-      (doseq [events (vals events-per)]
-        (try
-          (doseq [event events
-                  :let [event-context
-                        {:event-processor event-processor}]]
-            (jdbc/with-db-transaction [transaction (:handle database)]
-              (let [database (assoc database
-                               :handle
-                               transaction)
-                    processor (assoc processor
-                                :database
-                                database)]
-                (handle-event event-handler
-                  processor
-                  event
-                  event-context)
-                (on-processing-complete event-handler
-                  processor
-                  event
-                  event-context))))
-          (catch Throwable exception
-            (log/log-error
-              {:event-processor event-processor}
-              "Something went wrong in event processor."
-              exception)))))))
+    (let [grouped-events (->> (get-unprocessed-events event-handler processor)
+                           (group-by (partial group-unprocessed-events-by event-handler processor))
+                           (vals))]
+      (if thread-pool
+        (->> grouped-events
+          (cp/pmap thread-pool (partial handle-events-group processor))
+          (doall))
+        (->> grouped-events
+          (map (partial handle-events-group processor))
+          (doall))))))
 
 (defn- process-events-forever
   [{:keys [configuration event-processor]
@@ -74,18 +92,29 @@
               exception)))))))
 
 (defrecord Processor
-           [event-processor db-lock-id]
+           [event-processor
+            db-lock-id
+            configuration]
   component/Lifecycle
   (start [component]
     (log/log-info {:event-processor event-processor}
       "Starting event processor.")
-    (let [processor (future (process-events-forever component))]
+    (let [{:keys [threads]} configuration
+          thread-pool (when (> threads 1)
+                        (log/log-info {:threads threads}
+                                      "Starting thread-pool")
+                        (cp/threadpool threads))
+          component (assoc component :thread-pool thread-pool)
+          processor (future (process-events-forever component))]
       (assoc component :processor processor)))
 
   (stop [component]
     (when-let [processor (:processor component)]
       (future-cancel processor))
-    (dissoc component :processor)))
+    (when-let [thread-pool (:thread-pool component)]
+      (log/log-info {} "Shutdown thread-pool")
+      (cp/shutdown thread-pool))
+    (dissoc component :processor :thread-pool)))
 
 (defn ^:no-doc new-processor
   [event-processor]

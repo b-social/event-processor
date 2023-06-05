@@ -25,6 +25,8 @@
         (with-parameter (prefixed-parameter :schema-version)
           :type :integer :default 1)
         (with-parameter :db-lock-id
+          :type :integer :default 1)
+        (with-parameter :threads
           :type :integer :default 1)))))
 
 (defn processor-configuration [configuration-prefix processor-type overrides]
