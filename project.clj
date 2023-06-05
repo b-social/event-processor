@@ -21,7 +21,7 @@
             [lein-changelog "0.3.2"]
             [lein-eftest "0.5.9"]
             [lein-codox "0.10.7"]
-            [lein-cljfmt "0.6.7"]
+            [lein-cljfmt "0.9.0"]
             [lein-kibit "0.1.8"]
             [lein-bikeshed "0.5.2"]]
 
@@ -33,7 +33,8 @@
                        [com.impossibl.pgjdbc-ng/pgjdbc-ng "0.8.4"]
                        [hikari-cp "2.12.0"]
                        [tortue/spy "2.0.0"]]
-                    :eftest {:multithread? false}}}
+                    :eftest {:multithread? false}}
+             :clj-kondo   {:plugins [[com.github.clj-kondo/lein-clj-kondo "0.2.1"]]}}
 
   :cloverage
   {:ns-exclude-regex [#"^user"]}
@@ -47,32 +48,23 @@
    :doc-paths   ["docs"]
    :source-uri  "https://github.com/b-social/event-processor/blob/{version}/{filepath}#L{line}"}
 
-  :cljfmt {:indents ^:replace {#".*" [[:inner 0]]}}
+  :repositories [["public-github" {:url "git://github.com"}]]
 
-  :deploy-repositories
-  {"releases" {:url "https://repo.clojars.org" :creds :gpg}}
+  :deploy-repositories [["github" {:url "https://maven.pkg.github.com/b-social/event-processor"
+                                   :username :env/GITHUB_ACTOR
+                                   :password :env/GITHUB_TOKEN}]]
 
-  :release-tasks
-  [["shell" "git" "diff" "--exit-code"]
-   ["change" "version" "leiningen.release/bump-version" "release"]
-   ["codox"]
-   ["changelog" "release"]
-   ["shell" "sed" "-E" "-i" "" "s/\"[0-9]+\\.[0-9]+\\.[0-9]+\"/\"${:version}\"/g" "README.md"]
-   ["shell" "git" "add" "."]
-   ["vcs" "commit"]
-   ["vcs" "tag"]
-   ["deploy"]
-   ["change" "version" "leiningen.release/bump-version"]
-   ["vcs" "commit"]
-   ["vcs" "tag"]
-   ["vcs" "push"]]
+  :cljfmt {:indents ^:replace {#".*" [[:inner 1]]}}
 
-  :aliases {"test"      ["with-profile" "test" "eftest" ":all"]
-            "precommit" ["do"
-                         ["check"]
-                         ["kibit" "--replace"]
-                         ["cljfmt" "fix"]
-                         ["with-profile" "test" "bikeshed"
-                          "--name-collisions" "false"
-                          "--verbose" "true"]
-                         ["test"]]})
+  :aliases {"clj-kondo" ["with-profile" "+clj-kondo" "clj-kondo" "--lint" "src" "--lint" "test"]
+            "pre-release" ["do" "cljfmt" "check," "clj-kondo," "check," "eftest"]}
+
+  :release-tasks  [["pre-release"]
+                   ["vcs" "assert-committed"]
+                   ["change" "version" "leiningen.release/bump-version" "release"]
+                   ["vcs" "commit"]
+                   ["vcs" "tag"]
+                   ["deploy" "github"]
+                   ["change" "version" "leiningen.release/bump-version"]
+                   ["vcs" "commit"]
+                   ["vcs" "push"]])
