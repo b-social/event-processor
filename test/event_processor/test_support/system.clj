@@ -56,20 +56,24 @@
          :event-handler :event-handler
          :additional-dependencies {:atom :atom}}))))
 
-(defn new-test-system [configuration]
+(defn new-test-system
+  [configuration]
   (new-system
     (merge
       {:main-processing-enabled? true}
       configuration)))
 
 (defn with-system-lifecycle
-  [system-atom database-atom]
-  (fn [f]
-    (try
-      (reset! system-atom
-        (component/start-system
-          (new-test-system {:database-port (.getPort ^EmbeddedPostgres @database-atom)})))
-      (f)
-      (finally
+  ([system-atom database-atom configuration]
+    (fn [f]
+      (try
         (reset! system-atom
-          (component/stop-system @system-atom))))))
+          (component/start-system
+            (new-test-system (merge {:database-port (.getPort ^EmbeddedPostgres @database-atom)}
+                               configuration))))
+        (f)
+        (finally
+          (reset! system-atom
+            (component/stop-system @system-atom))))))
+  ([system-atom database-atom]
+    (with-system-lifecycle system-atom database-atom {})))
