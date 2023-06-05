@@ -1,0 +1,6 @@
+{:linters {:not-empty? {:level :off}
+
+           :refer-all {:exclude [clojure.test
+                                 org.httpkit.fake]}
+           :unresolved-symbol
+           {:exclude [with-fake-http]}}}

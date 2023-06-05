@@ -1,18 +1,18 @@
 (ns event-processor.test-support.database
   (:require
-   [com.stuartsierra.component :as component]
-   [configurati.core
-    :refer [define-configuration
-            with-specification
-            with-source
-            with-key-fn
-            map-source
-            with-parameter
-            define-configuration-specification]]
-   [configurati.key-fns :refer [remove-prefix]])
+    [com.stuartsierra.component :as component]
+    [configurati.core
+     :refer [define-configuration
+             with-specification
+             with-source
+             with-key-fn
+             map-source
+             with-parameter
+             define-configuration-specification]]
+    [configurati.key-fns :refer [remove-prefix]])
   (:import [com.impossibl.postgres.jdbc PGDataSource]
-           [com.zaxxer.hikari HikariConfig HikariDataSource]
-           [java.io Closeable]))
+    [com.zaxxer.hikari HikariConfig HikariDataSource]
+    [java.io Closeable]))
 
 (def database-configuration-specification
   (define-configuration-specification
@@ -30,9 +30,9 @@
     (with-source
       (map-source
         (merge
-          {:database-host     "localhost"
-           :database-name     "postgres"
-           :database-user     "postgres"
+          {:database-host "localhost"
+           :database-name "postgres"
+           :database-user "postgres"
            :database-password "postgres"}
           overrides)))))
 

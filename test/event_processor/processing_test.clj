@@ -1,14 +1,14 @@
 (ns event-processor.processing-test
   (:require
-   [clojure.test :refer :all]
-   [event-processor.test-support.system :refer
-    [with-system-lifecycle stub-get-unprocessed-events
-     stub-group-unprocessed-events-by stub-handle-event
-     stub-on-processing-complete]]
-   [event-processor.test-support.postgres.database :as database]
-   [event-processor.test-support.conditional-execution :refer [do-until]]
-   [spy.core :as spy]
-   [event-processor.processor.protocols :refer [EventProcessor]]))
+    [clojure.test :refer :all]
+    [event-processor.processor.protocols :refer [EventProcessor]]
+    [event-processor.test-support.conditional-execution :refer [do-until]]
+    [event-processor.test-support.postgres.database :as database]
+    [event-processor.test-support.system :refer
+     [with-system-lifecycle stub-get-unprocessed-events
+      stub-group-unprocessed-events-by stub-handle-event
+      stub-on-processing-complete]]
+    [spy.core :as spy]))
 
 (let [database (atom nil)
       test-system (atom nil)]
@@ -18,7 +18,7 @@
 
   (deftest processes-single-event
     (let [^EventProcessor event-handler (:event-handler @test-system)
-          event {:message   "event"
+          event {:message "event"
                  :group-key "group-key"}
           unprocessed-events (atom [event])
           remove-unprocessed-event (fn [completed] (reset! unprocessed-events
@@ -54,9 +54,9 @@
 
   (deftest processes-multiple-events-from-same-group
     (let [^EventProcessor event-handler (:event-handler @test-system)
-          event-1 {:message   "event-1"
+          event-1 {:message "event-1"
                    :group-key "group-key-1"}
-          event-2 {:message   "event-2"
+          event-2 {:message "event-2"
                    :group-key "group-key-1"}
 
           unprocessed-events (atom [event-1 event-2])
@@ -86,9 +86,9 @@
           (is (spy/not-called? mock-on-processing-complete))))))
 
   (deftest processes-multiple-events-from-different-groups
-    (let [event-1 {:message   "event-1"
+    (let [event-1 {:message "event-1"
                    :group-key "group-key-1"}
-          event-2 {:message   "event-2"
+          event-2 {:message "event-2"
                    :group-key "group-key-2"}
 
           unprocessed-events (atom [event-1 event-2])

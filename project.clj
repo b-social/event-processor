@@ -54,7 +54,10 @@
                                    :username :env/GITHUB_ACTOR
                                    :password :env/GITHUB_TOKEN}]]
 
-  :cljfmt {:indents ^:replace {#".*" [[:inner 1]]}}
+  :cljfmt {:indents ^:replace {#".*" [[:inner 1]]}
+           :sort-ns-references? true
+           :remove-multiple-non-indenting-spaces? true
+           :split-keypairs-over-multiple-lines? true}
 
   :aliases {"clj-kondo" ["with-profile" "+clj-kondo" "clj-kondo" "--lint" "src" "--lint" "test"]
             "pre-release" ["do" "cljfmt" "check," "clj-kondo," "check," "eftest"]}

@@ -2,17 +2,12 @@
   (:require
     [com.stuartsierra.component :as component]
 
-    [event-processor.test-support.database :as db]
     [configurati.core :as conf]
+    [event-processor.processor.protocols :refer [EventProcessor]]
     [event-processor.processor.system :as processors]
 
-    [event-processor.processor.protocols :refer [EventProcessor
-                                                 get-unprocessed-events
-                                                 group-unprocessed-events-by
-                                                 handle-event
-                                                 on-processing-complete]])
+    [event-processor.test-support.database :as db])
   (:import (com.opentable.db.postgres.embedded EmbeddedPostgres)))
-
 
 (defn stub-get-unprocessed-events [_ _] [])
 (defn stub-group-unprocessed-events-by [_ _ _])
@@ -35,31 +30,31 @@
 (defn new-system
   ([] (new-system {}))
   ([configuration-overrides]
-   (merge
-     (component/system-map
-       :database-configuration
-       (conf/resolve
-         (:database
-          configuration-overrides
-          (db/database-configuration
-            (select-keys configuration-overrides [:database-port]))))
-       :database
-       (component/using
-         (db/new-database)
-         {:configuration
-          :database-configuration})
+    (merge
+      (component/system-map
+        :database-configuration
+        (conf/resolve
+          (:database
+            configuration-overrides
+            (db/database-configuration
+              (select-keys configuration-overrides [:database-port]))))
+        :database
+        (component/using
+          (db/new-database)
+          {:configuration
+           :database-configuration})
 
-       :event-handler
-       (AtomEventHandler. (atom []))
-       :atom
-       (atom []))
+        :event-handler
+        (AtomEventHandler. (atom []))
+        :atom
+        (atom []))
 
-     (processors/new-system
-       configuration-overrides
-       {:processor-identifier    :event-processor
-        :database                :database
-        :event-handler           :event-handler
-        :additional-dependencies {:atom :atom}}))))
+      (processors/new-system
+        configuration-overrides
+        {:processor-identifier :event-processor
+         :database :database
+         :event-handler :event-handler
+         :additional-dependencies {:atom :atom}}))))
 
 (defn new-test-system [configuration]
   (new-system
@@ -72,9 +67,9 @@
   (fn [f]
     (try
       (reset! system-atom
-              (component/start-system
-                (new-test-system {:database-port (.getPort ^EmbeddedPostgres @database-atom)})))
+        (component/start-system
+          (new-test-system {:database-port (.getPort ^EmbeddedPostgres @database-atom)})))
       (f)
       (finally
         (reset! system-atom
-                (component/stop-system @system-atom))))))
+          (component/stop-system @system-atom))))))
