@@ -1,4 +1,4 @@
-(defproject b-social/event-processor "0.2.1-SNAPSHOT"
+(defproject b-social/event-processor "0.2.1"
 
   :description "A library for processing events as a stuartsierra component and configured with configurati. Opinionated that the event processing will be wrapped in a jdbc transaction."
 
