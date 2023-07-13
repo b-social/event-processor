@@ -1,4 +1,4 @@
-(defproject b-social/event-processor "0.2.2"
+(defproject b-social/event-processor "0.2.3-SNAPSHOT"
 
   :description "A library for processing events as a stuartsierra component and configured with configurati. Opinionated that the event processing will be wrapped in a jdbc transaction."
 
@@ -62,11 +62,12 @@
   :aliases {"clj-kondo" ["with-profile" "+clj-kondo" "clj-kondo" "--lint" "src" "--lint" "test"]
             "pre-release" ["do" "cljfmt" "check," "clj-kondo," "check," "eftest"]}
 
-  :release-tasks  [["pre-release"]
-                   ["vcs" "assert-committed"]
-                   ["change" "version" "leiningen.release/bump-version" "release"]
-                   ["vcs" "commit"]
-                   ["vcs" "tag"]
+  :release-tasks  [
+                   ;["pre-release"]
+                   ;["vcs" "assert-committed"]
+                   ;["change" "version" "leiningen.release/bump-version" "release"]
+                   ;["vcs" "commit"]
+                   ;["vcs" "tag"]
                    ["deploy" "github"]
                    ["change" "version" "leiningen.release/bump-version"]
                    ["vcs" "commit"]
