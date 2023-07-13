@@ -13,7 +13,8 @@
                  [cambium/cambium.core "0.9.3"]
                  [cambium/cambium.codec-cheshire "0.9.3"]
                  [org.clojure/java.jdbc "0.7.11"]
-                 [org.clj-commons/claypoole "1.2.2"]]
+                 [org.clj-commons/claypoole "1.2.2"]
+                 [com.datadoghq/dd-trace-ot "1.17.0"]]
 
   :plugins [[lein-cloverage "1.1.2"]
             [lein-shell "0.5.0"]
@@ -30,7 +31,6 @@
                        [freeport "1.0.0"]
                        [com.opentable.components/otj-pg-embedded "1.0.1"]
                        [org.apache.curator/curator-test "5.0.0"]
-                       [com.impossibl.pgjdbc-ng/pgjdbc-ng "0.8.4"]
                        [hikari-cp "2.12.0"]
                        [tortue/spy "2.0.0"]]
                     :eftest {:multithread? false}}

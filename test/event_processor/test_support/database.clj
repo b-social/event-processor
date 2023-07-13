@@ -10,8 +10,7 @@
              with-parameter
              define-configuration-specification]]
     [configurati.key-fns :refer [remove-prefix]])
-  (:import [com.impossibl.postgres.jdbc PGDataSource]
-    [com.zaxxer.hikari HikariConfig HikariDataSource]
+  (:import [com.zaxxer.hikari HikariConfig HikariDataSource]
     [java.io Closeable]))
 
 (def database-configuration-specification
@@ -37,17 +36,12 @@
           overrides)))))
 
 (defn datasource-for [{:keys [user password host port name]}]
-  (let [postgres-datasource
-        (doto (PGDataSource.)
-          (.setUser user)
-          (.setPassword password)
-          (.setHost host)
-          (.setPort port)
-          (.setDatabaseName name))
-
-        hikari-datasource-config
+  (let [hikari-datasource-config
         (doto (HikariConfig.)
-          (.setDataSource postgres-datasource))
+          (.setUsername user)
+          (.setPassword password)
+          (.setJdbcUrl (format "jdbc:postgresql://%s:%s/%s"
+                         host port name)))
 
         hikari-datasource
         (HikariDataSource. hikari-datasource-config)]

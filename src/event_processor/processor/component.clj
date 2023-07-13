@@ -7,7 +7,8 @@
     [event-processor.processor.protocols
      :refer [on-processing-complete
              get-unprocessed-events group-unprocessed-events-by handle-event]]
-    [event-processor.utils.logging :as log]))
+    [event-processor.utils.logging :as log])
+  (:import (io.opentracing.util GlobalTracer)))
 
 (defn- milliseconds [millis] millis)
 
@@ -24,22 +25,31 @@
     (doseq [event events
             :let [event-context
                   {:event-processor event-processor}]]
-      (jdbc/with-db-transaction
-        [transaction (:handle database)]
-        (let [database (assoc database
-                         :handle
-                         transaction)
-              processor (assoc processor
-                          :database
-                          database)]
-          (handle-event event-handler
-            processor
-            event
-            event-context)
-          (on-processing-complete event-handler
-            processor
-            event
-            event-context))))
+      (let [tracer (GlobalTracer/get)
+            span (-> tracer
+                   (.buildSpan "event-processor.handle-event")
+                   (.start))
+            scope (.activateSpan tracer span)]
+        (try
+          (jdbc/with-db-transaction
+            [transaction (:handle database)]
+            (let [database (assoc database
+                             :handle
+                             transaction)
+                  processor (assoc processor
+                              :database
+                              database)]
+              (handle-event event-handler
+                processor
+                event
+                event-context)
+              (on-processing-complete event-handler
+                processor
+                event
+                event-context)))
+          (finally
+            (.finish span)
+            (.close scope)))))
     (catch Throwable exception
       (log/log-error
         {:event-processor event-processor}
