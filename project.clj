@@ -62,12 +62,11 @@
   :aliases {"clj-kondo" ["with-profile" "+clj-kondo" "clj-kondo" "--lint" "src" "--lint" "test"]
             "pre-release" ["do" "cljfmt" "check," "clj-kondo," "check," "eftest"]}
 
-  :release-tasks  [
-                   ;["pre-release"]
-                   ;["vcs" "assert-committed"]
-                   ;["change" "version" "leiningen.release/bump-version" "release"]
-                   ;["vcs" "commit"]
-                   ;["vcs" "tag"]
+  :release-tasks  [["pre-release"]
+                   ["vcs" "assert-committed"]
+                   ["change" "version" "leiningen.release/bump-version" "release"]
+                   ["vcs" "commit"]
+                   ["vcs" "tag"]
                    ["deploy" "github"]
                    ["change" "version" "leiningen.release/bump-version"]
                    ["vcs" "commit"]
