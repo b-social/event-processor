@@ -12,7 +12,7 @@
           _# (.setInt get-lock-statement# 1 lock-id)
           result-set# (.executeQuery get-lock-statement#)
 
-          _# (.first result-set#)
+          _# (.next result-set#)
           acquired (.getBoolean result-set# 1)
 
           _# (.close result-set#)]
