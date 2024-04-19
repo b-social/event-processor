@@ -14,7 +14,7 @@
                  [cambium/cambium.codec-cheshire "0.9.3"]
                  [org.clojure/java.jdbc "0.7.11"]
                  [org.clj-commons/claypoole "1.2.2"]
-                 [com.datadoghq/dd-trace-ot "1.17.0"]]
+                 [com.kroo.service-base/datadog-utils "0.88"]]
 
   :plugins [[lein-cloverage "1.1.2"]
             [lein-shell "0.5.0"]
@@ -48,7 +48,10 @@
    :doc-paths   ["docs"]
    :source-uri  "https://github.com/b-social/event-processor/blob/{version}/{filepath}#L{line}"}
 
-  :repositories [["public-github" {:url "git://github.com"}]]
+  :repositories [["public-github" {:url "git://github.com"}]
+                 ["kroo-github" {:url "https://maven.pkg.github.com/b-social/REPOSITORY"
+                                 :username :env/GITHUB_ACTOR
+		                 :password :env/GITHUB_TOKEN}]]
 
   :deploy-repositories [["github" {:url "https://maven.pkg.github.com/b-social/event-processor"
                                    :username :env/GITHUB_ACTOR
