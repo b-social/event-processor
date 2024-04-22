@@ -3,7 +3,7 @@
     [clojure.string :as str]
     [com.stuartsierra.component :as component]
     [configurati.core :as conf]
-    [event-processor.processor.component :as two-stage]
+    [com.kroo.service-base.event-processor :as two-stage]
     [event-processor.processor.configuration :as processor-configuration]
     [event-processor.utils.logging :as log]))
 
@@ -79,21 +79,23 @@
     (log/log-info
       {processing-enabled processing-enabled?}
       "Processing enabled?")
-    (when processing-enabled?
-      (component/system-map
-        processor-configuration
-        (conf/resolve
-          (processor configuration-overrides
-            (processor-configuration/processor-configuration
-              configuration-prefix
-              processor-identifier
-              configuration-overrides)))
-
-        processor
-        (component/using
-          (two-stage/new-processor processor-identifier)
-          (merge
-            {:configuration processor-configuration
-             :database database
-             :event-handler event-handler}
-            additional-dependencies))))))
+    (component/system-map
+       processor-configuration
+       (assoc (conf/resolve
+                         (processor configuration-overrides
+                                    (processor-configuration/processor-configuration
+                                     configuration-prefix
+                                     processor-identifier
+                                     configuration-overrides)))
+                        :enabled? processing-enabled?
+                        :processor-id processor-identifier)
+       
+       
+       processor
+       (component/using
+        (two-stage/map->EventProcessor {})
+        (merge
+         {:configuration processor-configuration
+          :database database
+          :event-handler event-handler}
+         additional-dependencies)))))

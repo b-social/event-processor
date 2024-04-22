@@ -7,14 +7,9 @@
   :license {:name "The MIT License"
             :url  "https://opensource.org/licenses/MIT"}
 
-  :dependencies [[org.clojure/clojure "1.10.0"]
-                 [com.stuartsierra/component "1.0.0"]
+  :dependencies [[org.clojure/clojure "1.11.1"]
                  [io.logicblocks/configurati "0.5.2"]
-                 [cambium/cambium.core "0.9.3"]
-                 [cambium/cambium.codec-cheshire "0.9.3"]
-                 [org.clojure/java.jdbc "0.7.11"]
-                 [org.clj-commons/claypoole "1.2.2"]
-                 [com.kroo.service-base/datadog-utils "0.88"]]
+                 [com.kroo.service-base/event-processor "0.105"]]
 
   :plugins [[lein-cloverage "1.1.2"]
             [lein-shell "0.5.0"]

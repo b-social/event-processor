@@ -1,14 +1,5 @@
-(ns event-processor.processor.protocols)
+(ns event-processor.processor.protocols
+  (:require [com.kroo.service-base.event-processor.protocols :as p]))
 
-(defprotocol EventProcessor
-  "A handler that is called at certain points in an events lifecycle.
-  The passed processor contains all the configured dependencies."
-  :extend-via-metadata true
-  (get-unprocessed-events [this processor]
-    "A callback to get all un-processed events")
-  (group-unprocessed-events-by [this processor event]
-    "Callback to get the key for which to process an event")
-  (handle-event [this processor event event-context]
-    "A callback for processing an event")
-  (on-processing-complete [this processor event event-context]
-    "A callback for when an event has finished processing"))
+;; re-exporting to ease transition, protocol is the same
+(def EventProcessor p/EventProcessor)
