@@ -4,8 +4,7 @@
     [com.stuartsierra.component :as component]
     [configurati.core :as conf]
     [com.kroo.service-base.event-processor :as two-stage]
-    [event-processor.processor.configuration :as processor-configuration]
-    [event-processor.utils.logging :as log]))
+    [event-processor.processor.configuration :as processor-configuration]))
 
 (defn- ->keyword
   [parts]
@@ -76,9 +75,6 @@
         (or processor (->keyword [processor-name "-processor"]))
         processing-enabled?
         (get configuration-overrides processing-enabled true)]
-    (log/log-info
-      {processing-enabled processing-enabled?}
-      "Processing enabled?")
     (component/system-map
        processor-configuration
        (assoc (conf/resolve
